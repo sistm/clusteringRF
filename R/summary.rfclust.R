@@ -76,7 +76,7 @@ summary.rfclust <- function(object, ...){
   for (j in 1:length(MDA_importance_ARI_permutation)){
     for (var in names(MDA_importance_ARI_permutation[[j]])){
       if (is.null(MDA_importance_ARI_permutation_var[[var]])){
-        MDA_importance_ARI_permutation_count_var[[var]] <- 0
+        MDA_importance_ARI_permutation_var[[var]] <- 0
       }
       MDA_importance_ARI_permutation_var[[var]]  <- MDA_importance_ARI_permutation_var[[var]] + MDA_importance_ARI_permutation[[j]][[var]]
     }
@@ -86,7 +86,7 @@ summary.rfclust <- function(object, ...){
   
   output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var, 
                          "MDA_importance_permutation_counts_variables" = MDA_importance_permutation_count_moy_var,
-                         "MDA_importance_ MDA_importance_ARI_permutation_variables" =  MDA_importance_ARI_permutation_moy_var)
+                         "MDA_importance_ARI_permutation_variables" =  MDA_importance_ARI_permutation_moy_var)
   class(output_summary) <- "rfclust.summary"
   return(output_summary)
 

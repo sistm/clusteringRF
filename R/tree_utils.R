@@ -5,6 +5,7 @@
 #' @return a data frame with 4 columns : cluster label, variable name, lower 
 #' bound of the variable range and upper bound of the variable range
 #' @importFrom stringr str_split str_split_fixed str_trim str_remove_all str_extract_all
+#' @importFrom utils tail
 #' @export
 
 make_path_cluster <- function(description){
