@@ -23,6 +23,10 @@ summary.rfclust <- function(object, ...){
   sum_absent <- Reduce('+', matrices_absent)
   
   MDI_importance <- lapply(object, '[[', 5)
+  
+  MDA_importance_permutation_count <- lapply(object, '[[', 6)
+  
+  MDA_importance_ARI_permutation <- lapply(object, '[[', 7)
 
   if(object[[1]]$distance == "co-clustering"){
 
@@ -41,7 +45,7 @@ summary.rfclust <- function(object, ...){
   # Si NA, mettre à 0
   distance_matrix[is.na(distance_matrix)] <- 0
   
-  #Importance des variables
+  #Importance des variables MDI 
   MDI_importance_var <- list()
   for (j in 1:length(MDI_importance)){
     for (var in names(MDI_importance[[j]])){
@@ -54,7 +58,35 @@ summary.rfclust <- function(object, ...){
   
   MDI_importance_moy_var <- lapply(MDI_importance_var, function(x) x/ntrees)
   
-  output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var)
+  #Importance des variables MDA 
+  MDA_importance_permutation_count_var <- list()
+  for (j in 1:length(MDA_importance_permutation_count)){
+    for (var in names(MDA_importance_permutation_count[[j]])){
+      if (is.null(MDA_importance_permutation_count_var[[var]])){
+        MDA_importance_permutation_count_var[[var]] <- 0
+      }
+      MDA_importance_permutation_count_var[[var]]  <- MDA_importance_permutation_count_var[[var]] + MDA_importance_permutation_count[[j]][[var]]
+    }
+  }
+  
+  MDA_importance_permutation_count_moy_var <- lapply(MDA_importance_permutation_count_var, function(x) x/ntrees)
+  
+  #Importance des variables MDA 
+  MDA_importance_ARI_permutation_var <- list()
+  for (j in 1:length(MDA_importance_ARI_permutation)){
+    for (var in names(MDA_importance_ARI_permutation[[j]])){
+      if (is.null(MDA_importance_ARI_permutation_var[[var]])){
+        MDA_importance_ARI_permutation_count_var[[var]] <- 0
+      }
+      MDA_importance_ARI_permutation_var[[var]]  <- MDA_importance_ARI_permutation_var[[var]] + MDA_importance_ARI_permutation[[j]][[var]]
+    }
+  }
+  
+  MDA_importance_ARI_permutation_moy_var <- lapply(MDA_importance_ARI_permutation_var, function(x) x/ntrees)
+  
+  output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var, 
+                         "MDA_importance_permutation_counts_variables" = MDA_importance_permutation_count_moy_var,
+                         "MDA_importance_ MDA_importance_ARI_permutation_variables" =  MDA_importance_ARI_permutation_moy_var)
   class(output_summary) <- "rfclust.summary"
   return(output_summary)
 

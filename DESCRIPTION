@@ -23,7 +23,9 @@ Imports:
     GGally, 
     pbapply, 
     progress,
-    tibble
+    tibble, 
+    stringr, 
+    mclust
 Remotes: 
     sistm/divclust
 Suggests: 

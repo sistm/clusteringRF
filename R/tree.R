@@ -25,6 +25,7 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
   index_boot <- sample(1:nrow(X), size = nrow(X), replace = TRUE)
   oob <- rn[-unique(index_boot)]
   X_ib <- X[index_boot, , drop=FALSE]
+  X_oob <- X[oob, ] #MDA
   #rownames(X_ib) <- make.unique(rn[index_boot])
 
   #Matrice d'absence
@@ -42,6 +43,11 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
     B_diff <- tree_opti$height
     sum_MDI_importance <- tree_opti$sum_MDI_importance
+    
+    description <- tree_opti$description
+    path_cluster_oob <- make_path_cluster(description)
+    prediction_oob <- make_prediction(X_oob, path_cluster_oob)
+    MDA_importance <- make_MDA_importance(X_oob, path_cluster_oob, prediction_oob)
   
     #Extraction des différents clusters
     clus_indiv_unik <- sapply(tree_opti$clusters,
@@ -105,6 +111,11 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     #tree_opti <- cutreediv(tree_max, K = nombre_clusters)
     tree_opti <- cutreediv(tree_init, K = nombre_clusters, weighting)
     sum_MDI_importance <- tree_opti$sum_MDI_importance
+    
+    description <- tree_opti$description
+    path_cluster_oob <- make_path_cluster(description)
+    prediction_oob <- make_prediction(X_oob, path_cluster_oob)
+    MDA_importance <- make_MDA_importance(X_oob, path_cluster_oob, prediction_oob)
 
     #We specify each unique individual for each of our clusters
     clus_indiv_unik <- sapply(tree_opti$clusters,
@@ -130,7 +141,9 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
 
   # Returns the list of 3 matrices
   out <- list("sim" = sim, "dist" = dist, "absent" = absent,
-              "distance"=distance, "MDI_importance" = sum_MDI_importance)
+              "distance"=distance, "MDI_importance" = sum_MDI_importance, 
+              "MDA_importance_permutation_count" = MDA_importance$permutation_count,
+              "MDA_importance_ARI_permutation" = MDA_importance$ARI_permutation)
   return(out)
 }
 
