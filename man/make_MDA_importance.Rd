@@ -14,7 +14,7 @@ make_MDA_importance(X_oob, path_cluster, prediction)
 \item{prediction}{a data frame produced by \code{make_prediction()}}
 }
 \value{
-a data frame with 2 columns : permutation_count which counts
+a list with 2 elements : permutation_count which counts
 the proportion of observations whose cluster assignment changed after
 permutation and ARI_permutation which computes adjusted rand index between the
 original and permuted cluster assignments.

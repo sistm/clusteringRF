@@ -66,7 +66,7 @@ make_prediction <- function(X_oob, path_cluster){
 #' @param X_oob a data frame of out-of-bag observations
 #' @param path_cluster a data frame produced by \code{make_path_cluster()}
 #' @param prediction a data frame produced by \code{make_prediction()}
-#' @return a data frame with 2 columns : permutation_count which counts 
+#' @return a list with 2 elements : permutation_count which counts 
 #' the proportion of observations whose cluster assignment changed after
 #' permutation and ARI_permutation which computes adjusted rand index between the
 #' original and permuted cluster assignments. 
@@ -86,5 +86,5 @@ make_MDA_importance <- function(X_oob, path_cluster, prediction){
     ARI_permutation[j] <- adjustedRandIndex(prediction$prediction_oob, 
                                             prediction_j$prediction_oob)
   }
-  return(data.frame(permutation_count = permutation_count, ARI_permutation = ARI_permutation, stringsAsFactors = FALSE))
+  return(list(permutation_count = permutation_count, ARI_permutation = ARI_permutation))
 }
