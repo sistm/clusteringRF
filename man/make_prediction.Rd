@@ -2,12 +2,12 @@
 % Please edit documentation in R/tree_utils.R
 \name{make_prediction}
 \alias{make_prediction}
-\title{Predicts cluster membership for our-of-bag observations}
+\title{Predicts cluster membership}
 \usage{
-make_prediction(X_oob, path_cluster)
+make_prediction(X, path_cluster)
 }
 \arguments{
-\item{X_oob}{a data frame of out-of-bag observations}
+\item{X}{a data frame of observations}
 
 \item{path_cluster}{a data frame produced by \code{make_path_cluster()}}
 }

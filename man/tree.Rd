@@ -16,7 +16,7 @@ tree(X, mtry = ncol(X), distance = c("co-clustering"), weighting = FALSE)
 \item{weighting}{Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.}
 }
 \value{
-dissimilarity matrix and oob matrix
+dissimilarity matrix and information on the importance of variables
 }
 \description{
 Computes a divisive monothetic tree from the divclust package using either

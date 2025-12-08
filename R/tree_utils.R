@@ -32,18 +32,18 @@ make_path_cluster <- function(description){
   return(path_cluster)}
 
 
-#' @title Predicts cluster membership for our-of-bag observations
+#' @title Predicts cluster membership
 #' @description Function which assigns each observation to the right cluster.
-#' @param X_oob a data frame of out-of-bag observations
+#' @param X a data frame of observations
 #' @param path_cluster a data frame produced by \code{make_path_cluster()}
 #' @return a data frame with the predicted cluster label for each observation
 #' @export
-make_prediction <- function(X_oob, path_cluster){
-  n <- nrow(X_oob)
+make_prediction <- function(X, path_cluster){
+  n <- nrow(X)
   prediction <- character(n)
   clusters <- unique(path_cluster$cluster)
   for (i in seq_len(n)){
-    X_i <- X_oob[i, , drop = FALSE]
+    X_i <- X[i, , drop = FALSE]
     scores <- numeric(length(clusters))
     names(scores) <- clusters
     for (cluster in clusters){
@@ -56,35 +56,62 @@ make_prediction <- function(X_oob, path_cluster){
     }
     prediction[i] <- names(which.max(scores))
   }
-  return(data.frame(prediction_oob = prediction, stringsAsFactors = FALSE))
+  return(data.frame(prediction = prediction, stringsAsFactors = FALSE))
 }
 
 
-#' @title Computes Mean Decrease of Accuracy (MDA) importance metrics
-#' @description Function which estimates the importance of each variable using a 
-#' permuation approach.
+#' @title Computes Clustering Stability Importance (CSI) Metrics for co-clustering distance
+#' @description Function which estimates the importance of each variable on the clustering
+#' using a permuation approach.
 #' @param X_oob a data frame of out-of-bag observations
 #' @param path_cluster a data frame produced by \code{make_path_cluster()}
 #' @param prediction a data frame produced by \code{make_prediction()}
-#' @return a list with 2 elements : permutation_count which counts 
+#' @return a list with 2 elements : Out-of-bag Reassignment Rate (CSI_ORR) which counts 
 #' the proportion of observations whose cluster assignment changed after
-#' permutation and ARI_permutation which computes adjusted rand index between the
+#' permutation and ARI Stability Importance (CSI_ARI) which computes adjusted rand index between the
 #' original and permuted cluster assignments. 
 #' @importFrom mclust adjustedRandIndex
 #' @export
-make_MDA_importance <- function(X_oob, path_cluster, prediction){
+make_CSI_metrics_coclust <- function(X_oob, path_cluster, prediction){
   p_oob <- ncol(X_oob)
-  permutation_count <- numeric(p_oob)
-  ARI_permutation <- numeric(p_oob)
-  names(permutation_count) <- names(ARI_permutation) <- names(X_oob)
+  CSI_ORR <- numeric(p_oob)
+  CSI_ARI <- numeric(p_oob)
+  names(CSI_ORR) <- names(CSI_ARI) <- names(X_oob)
   for (j in seq_len(p_oob)){
     X_perm <- X_oob
     X_perm[[j]] <- sample(X_perm[[j]])
     prediction_j <- make_prediction(X_perm, path_cluster)
-    permutation_count[j] <- sum(prediction$prediction_oob != 
-                                  prediction_j$prediction_oob)/nrow(X_oob)
-    ARI_permutation[j] <- adjustedRandIndex(prediction$prediction_oob, 
-                                            prediction_j$prediction_oob)
+    CSI_ORR[j] <- sum(prediction$prediction != 
+                        prediction_j$prediction)/nrow(X_oob)
+    CSI_ARI[j] <- adjustedRandIndex(prediction$prediction, 
+                                    prediction_j$prediction)
   }
-  return(list(permutation_count = permutation_count, ARI_permutation = ARI_permutation))
+  return(list(CSI_ORR = CSI_ORR, CSI_ARI = CSI_ARI))
+}
+
+
+#' @title Computes Clustering Stability Importance (CSI) Metrics for inertia distance
+#' @description Function which estimates the importance of each variable on the clustering
+#' using a permutation approach.
+#' @param X_oob a data frame of out-of-bag observations
+#' @param path_cluster a data frame produced by \code{make_path_cluster()}
+#' @param prediction a data frame produced by \code{make_prediction()}
+#' @param dist_clusters a distance matrix 
+#' @return a list with 1 element : Inertia Permutation (CSI_IP) which computes the sum  
+#' of inertia between the original and permuted clusters assignments. 
+#' @importFrom mclust adjustedRandIndex
+#' @export
+make_CSI_metrics_inertia <- function(X_oob, path_cluster, prediction, dist_clusters){
+  p_oob <- ncol(X_oob)
+  CSI_IP <- numeric(p_oob)
+  names(CSI_IP) <- names(X_oob)
+  for (j in seq_len(p_oob)){
+    X_perm <- X_oob
+    X_perm[[j]] <- sample(X_perm[[j]])
+    prediction_j <- make_prediction(X_perm, path_cluster)
+    for (i in 1:nrow(prediction)){
+      CSI_IP[j] <- CSI_IP[j] + dist_clusters[prediction[[1]][[i]], prediction_j[[1]][[i]]]
+    }
+  }
+  return(list(CSI_IP = CSI_IP))
 }

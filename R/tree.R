@@ -9,7 +9,7 @@
 #' @param mtry number of variables selected at each tree node
 #' @param distance a character string, either "co-clustering" or "inertia".
 #' @param weighting Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.
-#' @return dissimilarity matrix and oob matrix
+#' @return dissimilarity matrix and information on the importance of variables
 #' @import dplyr pbapply divclust progress
 #' @export
 
@@ -47,8 +47,7 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     description <- tree_opti$description
     path_cluster_oob <- make_path_cluster(description)
     prediction_oob <- make_prediction(X_oob, path_cluster_oob)
-    MDA_importance <- make_MDA_importance(X_oob, path_cluster_oob, prediction_oob)
-  
+
     #Extraction des différents clusters
     clus_indiv_unik <- sapply(tree_opti$clusters,
                               function(x){
@@ -84,7 +83,14 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
       dist[i_set, j_set] <- dist_clusters[indices$cluster_i[k], indices$cluster_j[k]]
     }
 
+    CSI_metrics_inertia <- make_CSI_metrics_inertia(X_oob, path_cluster_oob, prediction_oob, dist_clusters)
+    
     sim <- 1 - absent - dist
+    
+    # Returns the list of 3 matrices
+    out <- list("sim" = sim, "dist" = dist, "absent" = absent,
+                "distance"=distance, "MDI_importance" = sum_MDI_importance, 
+                "CSI_IP" = CSI_metrics_inertia$CSI_IP)
 
   } else if(distance == "co-clustering"){
     #Initialisation des matrices de stockages
@@ -115,7 +121,7 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     description <- tree_opti$description
     path_cluster_oob <- make_path_cluster(description)
     prediction_oob <- make_prediction(X_oob, path_cluster_oob)
-    MDA_importance <- make_MDA_importance(X_oob, path_cluster_oob, prediction_oob)
+    CSI_metrics_coclust <- make_CSI_metrics_coclust(X_oob, path_cluster_oob, prediction_oob)
 
     #We specify each unique individual for each of our clusters
     clus_indiv_unik <- sapply(tree_opti$clusters,
@@ -137,13 +143,13 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     }
 
     dist <-  1 - absent - sim
+    
+    # Returns the list of 3 matrices
+    out <- list("sim" = sim, "dist" = dist, "absent" = absent,
+                "distance"=distance, "MDI_importance" = sum_MDI_importance, 
+                "CSI_ORR" = CSI_metrics_coclust$CSI_ORR,
+                "CSI_ARI" = CSI_metrics_coclust$CSI_ARI)
   }
-
-  # Returns the list of 3 matrices
-  out <- list("sim" = sim, "dist" = dist, "absent" = absent,
-              "distance"=distance, "MDI_importance" = sum_MDI_importance, 
-              "MDA_importance_permutation_count" = MDA_importance$permutation_count,
-              "MDA_importance_ARI_permutation" = MDA_importance$ARI_permutation)
   return(out)
 }
 
