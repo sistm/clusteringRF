@@ -40,8 +40,18 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     #Création de l'abre avec la profondeur kmax/2
     tree_kmax <- length(rn[unique(index_boot)])
     nombre_clusters <- floor(tree_kmax/2)
-    tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
-    B_diff <- tree_opti$height
+    #tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
+    tree_init <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
+    B_diff <- tree_init$height
+    
+    #Elagage
+    #Calcul des proportions d'inertie totale expliquées par l'inertie inter-cluster
+    ratios <- B_diff[1:(length(B_diff)-1)]/B_diff[2:length(B_diff)]
+    indice_max <- which.max(ratios)
+    
+    nombre_clusters <- indice_max +2 #pour permettre calcul du bon ratio
+    tree_opti <- cutreediv(tree_init, K = nombre_clusters, weighting)
+    
     sum_MDI_importance <- tree_opti$sum_MDI_importance
     
     description <- tree_opti$description
@@ -83,14 +93,21 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
       dist[i_set, j_set] <- dist_clusters[indices$cluster_i[k], indices$cluster_j[k]]
     }
 
-    CSI_metrics_inertia <- make_CSI_metrics_inertia(X_oob, path_cluster_oob, prediction_oob, dist_clusters)
+    CS_metrics <- make_CS_metrics(X_oob, path_cluster_oob, prediction_oob)
+    CS_metrics_inertia <- make_CS_metrics_inertia(X_oob, path_cluster_oob, prediction_oob, dist_clusters)
     
     sim <- 1 - absent - dist
     
     # Returns the list of 3 matrices
+    #out <- list("sim" = sim, "dist" = dist, "absent" = absent,
+    #            "distance"=distance, "MDI_importance" = sum_MDI_importance, 
+    #            "CS_IP" = CS_metrics_inertia$CS_IP)
+    
     out <- list("sim" = sim, "dist" = dist, "absent" = absent,
                 "distance"=distance, "MDI_importance" = sum_MDI_importance, 
-                "CSI_IP" = CSI_metrics_inertia$CSI_IP)
+                "CS_ORR" = CS_metrics$CS_ORR,
+                "CS_ARI" = CS_metrics$CS_ARI, 
+                "CS_IP" = CS_metrics_inertia$CS_IP)
 
   } else if(distance == "co-clustering"){
     #Initialisation des matrices de stockages
@@ -121,7 +138,7 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     description <- tree_opti$description
     path_cluster_oob <- make_path_cluster(description)
     prediction_oob <- make_prediction(X_oob, path_cluster_oob)
-    CSI_metrics_coclust <- make_CSI_metrics_coclust(X_oob, path_cluster_oob, prediction_oob)
+    CS_metrics <- make_CS_metrics(X_oob, path_cluster_oob, prediction_oob)
 
     #We specify each unique individual for each of our clusters
     clus_indiv_unik <- sapply(tree_opti$clusters,
@@ -147,8 +164,8 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     # Returns the list of 3 matrices
     out <- list("sim" = sim, "dist" = dist, "absent" = absent,
                 "distance"=distance, "MDI_importance" = sum_MDI_importance, 
-                "CSI_ORR" = CSI_metrics_coclust$CSI_ORR,
-                "CSI_ARI" = CSI_metrics_coclust$CSI_ARI)
+                "CS_ORR" = CS_metrics$CS_ORR,
+                "CS_ARI" = CS_metrics$CS_ARI)
   }
   return(out)
 }

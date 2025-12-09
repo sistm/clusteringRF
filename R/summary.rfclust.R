@@ -38,6 +38,36 @@ summary.rfclust <- function(object, ...){
   
   MDI_importance_moy_var <- lapply(MDI_importance_var, function(x) x/ntrees)
   
+  CS_ORR <- lapply(object, '[[', 6)
+  
+  CS_ARI <- lapply(object, '[[', 7)
+  
+  #Importance des variables CS
+  CS_ORR_var <- list()
+  for (j in 1:length(CS_ORR)){
+    for (var in names(CS_ORR[[j]])){
+      if (is.null(CS_ORR_var[[var]])){
+        CS_ORR_var[[var]] <- 0
+      }
+      CS_ORR_var[[var]]  <- CS_ORR_var[[var]] + CS_ORR[[j]][[var]]
+    }
+  }
+  
+  CS_ORR_moy_var <- lapply(CS_ORR_var, function(x) x/ntrees)
+  
+  
+  CS_ARI_var <- list()
+  for (j in 1:length(CS_ARI)){
+    for (var in names(CS_ARI[[j]])){
+      if (is.null(CS_ARI_var[[var]])){
+        CS_ARI_var[[var]] <- 0
+      }
+      CS_ARI_var[[var]]  <- CS_ARI_var[[var]] + CS_ARI[[j]][[var]]
+    }
+  }
+  
+  CS_ARI_moy_var <- lapply(CS_ARI_var, function(x) x/ntrees)
+  
   
   
   if(object[[1]]$distance == "co-clustering"){
@@ -48,40 +78,9 @@ summary.rfclust <- function(object, ...){
     diag(distance_matrix) <- 0
     distance_matrix[is.na(distance_matrix)] <- 0
     
-    
-    CSI_ORR <- lapply(object, '[[', 6)
-    
-    CSI_ARI <- lapply(object, '[[', 7)
-    
-    #Importance des variables CSI coclust
-    CSI_ORR_var <- list()
-    for (j in 1:length(CSI_ORR)){
-      for (var in names(CSI_ORR[[j]])){
-        if (is.null(CSI_ORR_var[[var]])){
-          CSI_ORR_var[[var]] <- 0
-        }
-        CSI_ORR_var[[var]]  <- CSI_ORR_var[[var]] + CSI_ORR[[j]][[var]]
-      }
-    }
-    
-    CSI_ORR_moy_var <- lapply(CSI_ORR_var, function(x) x/ntrees)
-    
-    
-    CSI_ARI_var <- list()
-    for (j in 1:length(CSI_ARI)){
-      for (var in names(CSI_ARI[[j]])){
-        if (is.null(CSI_ARI_var[[var]])){
-          CSI_ARI_var[[var]] <- 0
-        }
-        CSI_ARI_var[[var]]  <- CSI_ARI_var[[var]] + CSI_ARI[[j]][[var]]
-      }
-    }
-    
-    CSI_ARI_moy_var <- lapply(CSI_ARI_var, function(x) x/ntrees)
-    
     output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var, 
-                           "CSI_ORR_variables" = CSI_ORR_moy_var,
-                           "CSI_ARI_variables" =  CSI_ARI_moy_var)
+                           "CS_ORR_variables" = CS_ORR_moy_var,
+                           "CS_ARI_variables" =  CS_ARI_moy_var)
     
     
   }else if(object[[1]]$distance == "inertia"){
@@ -90,23 +89,25 @@ summary.rfclust <- function(object, ...){
     diag(distance_matrix) <- 0
     distance_matrix[is.na(distance_matrix)] <- 0
     
-    CSI_IP <- lapply(object, '[[', 6)
+    CS_IP <- lapply(object, '[[', 8)
     
-    #Importance des variables CSI inertia
-    CSI_IP_var <- list()
-    for (j in 1:length(CSI_IP)){
-      for (var in names(CSI_IP[[j]])){
-        if (is.null(CSI_IP_var[[var]])){
-          CSI_IP_var[[var]] <- 0
+    #Importance des variables CS inertia
+    CS_IP_var <- list()
+    for (j in 1:length(CS_IP)){
+      for (var in names(CS_IP[[j]])){
+        if (is.null(CS_IP_var[[var]])){
+          CS_IP_var[[var]] <- 0
         }
-        CSI_IP_var[[var]]  <- CSI_IP_var[[var]] + CSI_IP[[j]][[var]]
+        CS_IP_var[[var]]  <- CS_IP_var[[var]] + CS_IP[[j]][[var]]
       }
     }
     
-    CSI_IP_moy_var <- lapply(CSI_IP_var, function(x) x/ntrees)
+    CS_IP_moy_var <- lapply(CS_IP_var, function(x) x/ntrees)
     
-    output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var, 
-                           "CSI_IP_variables" = CSI_IP_moy_var)
+    output_summary <- list("distance_matrix" = distance_matrix, "MDI_importance_variables" = MDI_importance_moy_var,
+                           "CS_ORR_variables" = CS_ORR_moy_var,
+                           "CS_ARI_variables" =  CS_ARI_moy_var,
+                           "CS_IP_variables" = CS_IP_moy_var)
   }
   class(output_summary) <- "rfclust.summary"
   return(output_summary)
