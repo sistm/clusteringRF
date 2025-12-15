@@ -83,7 +83,7 @@ make_CS_metrics <- function(X_oob, path_cluster, prediction){
     prediction_j <- make_prediction(X_perm, path_cluster)
     CS_ORR[j] <- sum(prediction$prediction != 
                         prediction_j$prediction)/nrow(X_oob)
-    CS_ARI[j] <- adjustedRandIndex(prediction$prediction, 
+    CS_ARI[j] <- 1 - adjustedRandIndex(prediction$prediction, 
                                     prediction_j$prediction)
   }
   return(list(CS_ORR = CS_ORR, CS_ARI = CS_ARI))
