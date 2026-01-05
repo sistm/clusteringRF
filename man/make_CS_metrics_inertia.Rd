@@ -16,10 +16,10 @@ make_CS_metrics_inertia(X_oob, path_cluster, prediction, dist_clusters)
 \item{dist_clusters}{a distance matrix}
 }
 \value{
-a list with 1 element : Inertia Permutation (CS_IP) which computes the sum
+a list with 1 element : Inertia Path (CS_IP) which computes the sum
 of inertia between the original and permuted clusters assignments.
 }
 \description{
 Function which estimates the importance of each variable on the clustering
-using a permutation approach.
+using an approach based on the inertia path.
 }
