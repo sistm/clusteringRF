@@ -92,12 +92,12 @@ make_CS_metrics <- function(X_oob, path_cluster, prediction){
 
 #' @title Computes Clustering Stability (CS) Metrics for inertia distance
 #' @description Function which estimates the importance of each variable on the clustering
-#' using a permutation approach.
+#' using an approach based on the inertia path.
 #' @param X_oob a data frame of out-of-bag observations
 #' @param path_cluster a data frame produced by \code{make_path_cluster()}
 #' @param prediction a data frame produced by \code{make_prediction()}
 #' @param dist_clusters a distance matrix 
-#' @return a list with 1 element : Inertia Permutation (CS_IP) which computes the sum  
+#' @return a list with 1 element : Inertia Path (CS_IP) which computes the sum  
 #' of inertia between the original and permuted clusters assignments. 
 #' @importFrom mclust adjustedRandIndex
 #' @export
@@ -114,4 +114,5 @@ make_CS_metrics_inertia <- function(X_oob, path_cluster, prediction, dist_cluste
     }
   }
   return(list(CS_IP = CS_IP))
+
 }
