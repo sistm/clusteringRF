@@ -43,7 +43,7 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     
     
     tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
-    
+    B_diff <- tree_opti$height
     
     #Décommenter pour tree_opti
     #tree_init <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
