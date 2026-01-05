@@ -117,22 +117,25 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
     tree_kmax <- length(rn[unique(index_boot)])
     nombre_clusters_init <- floor(tree_kmax/2)
 
-    tree_init <- divclust(X_ib, K = nombre_clusters_init, mtry, weighting)
-    B_diff <- tree_init$height #car B(k+1) - B(k) = W(k) - W(k+1)
+    tree_opti <- divclust(X_ib, K = nombre_clusters_init, mtry, weighting)
     
-    #Décommenter si on veut finalement faire des arbres max
-    #tree_max <- divclust(X_ib, K = NULL, mtry)
-      #Extraction de kmax et de la variation d'inertie
-    #tree_kmax <- tree_max$kmax
-    #B_diff <- tree_max$height #car B(k+1) - B(k) = W(k) - W(k+1)
+    
+    #Décommenter pour tree opti
+    #tree_init <- divclust(X_ib, K = nombre_clusters_init, mtry, weighting)
+    #B_diff <- tree_init$height #car B(k+1) - B(k) = W(k) - W(k+1)
+    
+        #Décommenter si on veut finalement faire des arbres max
+        #tree_max <- divclust(X_ib, K = NULL, mtry)
+          #Extraction de kmax et de la variation d'inertie
+        #tree_kmax <- tree_max$kmax
+        #B_diff <- tree_max$height #car B(k+1) - B(k) = W(k) - W(k+1)
 
     #Calcul des proportions d'inertie totale expliquées par l'inertie inter-cluster
-    ratios <- B_diff[1:(length(B_diff)-1)]/B_diff[2:length(B_diff)]
-    indice_max <- which.max(ratios)
+    #ratios <- B_diff[1:(length(B_diff)-1)]/B_diff[2:length(B_diff)]
+    #indice_max <- which.max(ratios)
 
-    nombre_clusters <- indice_max +2 #pour permettre calcul du bon ratio
-    #tree_opti <- cutreediv(tree_max, K = nombre_clusters)
-    tree_opti <- cutreediv(tree_init, K = nombre_clusters, weighting)
+    #nombre_clusters <- indice_max +2 #pour permettre calcul du bon ratio
+    #tree_opti <- cutreediv(tree_init, K = nombre_clusters, weighting)
     sum_MDI_importance <- tree_opti$sum_MDI_importance
     
     description <- tree_opti$description
