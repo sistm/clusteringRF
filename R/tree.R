@@ -56,7 +56,8 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), pruning = TRUE,
       tree_opti <- cutreediv(tree_init, K = nombre_clusters_opti, weighting)
       
     } else{
-      tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
+      nombre_clusters_opti <- nombre_clusters
+      tree_opti <- divclust(X_ib, K = nombre_clusters_opti, mtry, weighting)
     }
     
     B_diff_opti <- tree_opti$height
@@ -85,8 +86,8 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), pruning = TRUE,
           list_inter <- tree_opti[["inertia"]][[cluster_i]][tree_opti[["inertia"]][[cluster_i]] %in% tree_opti[["inertia"]][[cluster_j]]]
           min_val <- min(list_inter)
           min_index <- which(B_diff_opti == min_val)[1]
-          dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters - 1)])/sum(B_diff_opti[1:(nombre_clusters - 1)])
-          #dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters - 1)])
+          dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters_opti - 1)])/sum(B_diff_opti[1:(nombre_clusters_opti - 1)])
+          #dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters_opti - 1)])
         }
       }
     }
