@@ -8,13 +8,15 @@
 #' @param X data.frame of input data
 #' @param mtry number of variables selected at each tree node
 #' @param distance a character string, either "co-clustering" or "inertia".
-#' @param weighting Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.
+#' @param pruning Logical (TRUE or FALSE). If TRUE, the inertia tree is pruned. 
+#' @param weighting Logical (TRUE or FALSE). If TRUE, inertia nodes are weighted 
+#' in the calculation of variable importance.
 #' @return dissimilarity matrix and information on the importance of variables
 #' @import dplyr pbapply divclust progress
 #' @export
 
 
-tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FALSE){
+tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), pruning = TRUE, weighting = FALSE){
 
 
   stopifnot(distance %in% c("co-clustering", "inertia"))
@@ -36,27 +38,28 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
   if (distance == "inertia"){
     #Initialisation des matrices de stockages
     dist <- matrix(0, nrow(X), nrow(X), dimnames = list(rn, rn))
-
+    
     #Création de l'abre avec la profondeur kmax/2
     tree_kmax <- length(rn[unique(index_boot)])
     nombre_clusters <- floor(tree_kmax/2)
     
+    if(pruning){
+      tree_init <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
+      B_diff <- tree_init$height
+
+      #Elagage
+      #Calcul des proportions d'inertie totale expliquées par l'inertie inter-cluster
+      ratios <- B_diff[1:(length(B_diff)-1)]/B_diff[2:length(B_diff)]
+      indice_max <- which.max(ratios)
+
+      nombre_clusters_opti <- indice_max +2 #pour permettre calcul du bon ratio
+      tree_opti <- cutreediv(tree_init, K = nombre_clusters_opti, weighting)
+      
+    } else{
+      tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
+    }
     
-    tree_opti <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
-    B_diff <- tree_opti$height
-    
-    #Décommenter pour tree_opti
-    #tree_init <- divclust(X_ib, K = nombre_clusters, mtry, weighting)
-    #B_diff <- tree_init$height
-    
-    #Elagage
-    #Calcul des proportions d'inertie totale expliquées par l'inertie inter-cluster
-    #ratios <- B_diff[1:(length(B_diff)-1)]/B_diff[2:length(B_diff)]
-    #indice_max <- which.max(ratios)
-    
-    #nombre_clusters <- indice_max +2 #pour permettre calcul du bon ratio
-    #tree_opti <- cutreediv(tree_init, K = nombre_clusters, weighting)
-    
+    B_diff_opti <- tree_opti$height
     sum_MDI_importance <- tree_opti$sum_MDI_importance
     
     description <- tree_opti$description
@@ -81,9 +84,9 @@ tree <- function(X, mtry = ncol(X), distance=c("co-clustering"), weighting = FAL
           list_inter <- list()
           list_inter <- tree_opti[["inertia"]][[cluster_i]][tree_opti[["inertia"]][[cluster_i]] %in% tree_opti[["inertia"]][[cluster_j]]]
           min_val <- min(list_inter)
-          min_index <- which(B_diff == min_val)[1]
-          dist_clusters[cluster_i, cluster_j] <- sum(B_diff[min_index:(nombre_clusters - 1)])/sum(B_diff[1:(nombre_clusters - 1)])
-          #dist_clusters[cluster_i, cluster_j] <- sum(B_diff[min_index:(nombre_clusters - 1)])
+          min_index <- which(B_diff_opti == min_val)[1]
+          dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters - 1)])/sum(B_diff_opti[1:(nombre_clusters - 1)])
+          #dist_clusters[cluster_i, cluster_j] <- sum(B_diff_opti[min_index:(nombre_clusters - 1)])
         }
       }
     }

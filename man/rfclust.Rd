@@ -9,6 +9,7 @@ rfclust(
   ntrees = 500,
   mtry = ncol(X),
   distance = "co-clustering",
+  pruning = TRUE,
   weighting = FALSE,
   ncores = parallel::detectCores() - 1
 )
@@ -23,7 +24,10 @@ Default is \code{ncol(X)}.}
 
 \item{distance}{a character string, either "co-clustering" or "inertia".}
 
-\item{weighting}{Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.}
+\item{pruning}{Logical (TRUE or FALSE). If TRUE, inertia trees are pruned.}
+
+\item{weighting}{Logical (TRUE or FALSE). If TRUE, inertia nodes are weighted
+in the calculation of variable importance.}
 
 \item{ncores}{number of cpus to parallelize over. Default is
 \code{parallel::detectCores()-1}.}

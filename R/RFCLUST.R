@@ -7,7 +7,9 @@
 #' @param mtry number of variables selected at each \code{divlust} tree node. 
 #' Default is \code{ncol(X)}.
 #' @param distance a character string, either "co-clustering" or "inertia".
-#' @param weighting Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.
+#' @param pruning Logical (TRUE or FALSE). If TRUE, inertia trees are pruned. 
+#' @param weighting Logical (TRUE or FALSE). If TRUE, inertia nodes are weighted 
+#' in the calculation of variable importance.
 #' @param ncores number of cpus to parallelize over. Default is
 #' \code{parallel::detectCores()-1}.
 #'
@@ -46,7 +48,7 @@
 #'    plot(s)
 #' }
 
-rfclust <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering", weighting = FALSE, ncores = parallel::detectCores()-1){
+rfclust <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering", pruning = TRUE, weighting = FALSE, ncores = parallel::detectCores()-1){
 
   stopifnot(is.data.frame(X))
   stopifnot(distance %in% c("co-clustering", "inertia"))
@@ -62,7 +64,7 @@ rfclust <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering",
   }
 
   forest <- pblapply(1:ntrees, function(i){
-    tree(X, mtry, distance, weighting)
+    tree(X, mtry, distance, pruning, weighting)
   }, cl = ncores)
 
   class(forest) <- "rfclust"

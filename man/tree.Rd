@@ -4,7 +4,13 @@
 \alias{tree}
 \title{Computes a divclust tree}
 \usage{
-tree(X, mtry = ncol(X), distance = c("co-clustering"), weighting = FALSE)
+tree(
+  X,
+  mtry = ncol(X),
+  distance = c("co-clustering"),
+  pruning = TRUE,
+  weighting = FALSE
+)
 }
 \arguments{
 \item{X}{data.frame of input data}
@@ -13,7 +19,10 @@ tree(X, mtry = ncol(X), distance = c("co-clustering"), weighting = FALSE)
 
 \item{distance}{a character string, either "co-clustering" or "inertia".}
 
-\item{weighting}{Logical (TRUE or FALSE). If TRUE, node inertia is weighted in the calculation of variable importance.}
+\item{pruning}{Logical (TRUE or FALSE). If TRUE, the inertia tree is pruned.}
+
+\item{weighting}{Logical (TRUE or FALSE). If TRUE, inertia nodes are weighted
+in the calculation of variable importance.}
 }
 \value{
 dissimilarity matrix and information on the importance of variables
