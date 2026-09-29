@@ -5,7 +5,7 @@
 #' @return a data frame with six columns : the cluster label, the variable name, the lower 
 #' and upper bounds of the variable's range (for quantitative variables), 
 #' the categories (for qualitative variables), and the variable type
-#' @importFrom stringr str_split str_split_fixed str_trim str_remove_all str_extract_all
+#' @importFrom stringr str_split str_split_fixed str_trim str_remove_all str_extract_all str_detect
 #' @importFrom utils tail
 #' @export
 

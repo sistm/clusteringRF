@@ -10,8 +10,9 @@ make_path_cluster(description)
 \item{description}{monothetic description of the leaves}
 }
 \value{
-a data frame with 4 columns : cluster label, variable name, lower
-bound of the variable range and upper bound of the variable range
+a data frame with six columns : the cluster label, the variable name, the lower
+and upper bounds of the variable's range (for quantitative variables),
+the categories (for qualitative variables), and the variable type
 }
 \description{
 Function which builds a data frame describing, for every cluster,

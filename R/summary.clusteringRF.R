@@ -1,4 +1,4 @@
-#' summary S3 method for rfclust objects
+#' summary S3 method for clusteringRF objects
 #'
 #' Merge all matrices and some analysis
 #'
@@ -9,7 +9,7 @@
 #' @export
 
 
-summary.rfclust <- function(object, ...){
+summary.clusteringRF <- function(object, ...){
   
   ntrees <- length(object)
   
@@ -109,7 +109,7 @@ summary.rfclust <- function(object, ...){
                            "CS_ARI_variables" =  CS_ARI_moy_var,
                            "CS_IP_variables" = CS_IP_moy_var)
   }
-  class(output_summary) <- "rfclust.summary"
+  class(output_summary) <- "clusteringRF.summary"
   return(output_summary)
   
 }

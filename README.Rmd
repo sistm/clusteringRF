@@ -13,41 +13,41 @@ knitr::opts_chunk$set(
 )
 ```
 
-# `RFCLUST`
+# `clusteringRF`
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/sistm/RFCLUST/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sistm/RFCLUST/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/sistm/clusteringRF/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sistm/clusteringRF/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`RFCLUST` performs Random Forests of Divisive Monothetic ([`divclust`](https://github.com/chavent/divclust)) Trees for Unsupervised Clustering.
+`clusteringRF` performs Random Forests of Divisive Monothetic ([`divclust`](https://github.com/chavent/divclust)) Trees for Unsupervised Clustering.
 
 ## Installation
 
-You can install the development version of RFCLUST from [GitHub](https://github.com/). 
+You can install the development version of clusteringRF from [GitHub](https://github.com/). 
 
-`RFCLUST`depends on a custopmized implementation of the [`divclust`](https://github.com/chavent/divclust) package, that must first be installed with the following:
+`clusteringRF`depends on a custopmized implementation of the [`divclust`](https://github.com/chavent/divclust) package, that must first be installed with the following:
 
 ```{r, eval=FALSE}
 # install.packages("remotes")
 remotes::install_github("sistm/divclust")
 ```
 
-Then, `RFCLUST` can be installed with:
+Then, `clusteringRF` can be installed with:
 ```{r, eval=FALSE}
-remotes::install_github("sistm/RFCLUST")
+remotes::install_github("sistm/clusteringRF")
 ```
 
 ## Example
 
 ```{r}
-library(RFCLUST)
+library(clusteringRF)
 library(palmerpenguins)
 mypeng <- as.data.frame(penguins)
 mypeng$year <- factor(as.character(mypeng$year),
                          levels=c("2007", "2008", "2009"),
                          ordered=TRUE)
 
-forest_clust <- rfclust(na.omit(mypeng[mypeng$sex=="male", -c(1, 7)]), ntrees = 50, ncores = 1)
+forest_clust <- clusteringRF(na.omit(mypeng[mypeng$sex=="male", -c(1, 7)]), ntrees = 50, ncores = 1)
 
 resume <- summary(forest_clust)
 plot(resume)

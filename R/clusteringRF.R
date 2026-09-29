@@ -28,7 +28,7 @@
 #'                          levels=c("2007", "2008", "2009"),
 #'                          ordered=TRUE)
 #' set.seed(123)
-#' forest_clust <- rfclust(na.omit(mypeng[mypeng$sex=="male", -c(1, 7)]), ntrees = 50, ncores = 1)
+#' forest_clust <- clusteringRF(na.omit(mypeng[mypeng$sex=="male", -c(1, 7)]), ntrees = 50, ncores = 1)
 #'
 #' if(interactive()){
 #'  resume <- summary(forest_clust)
@@ -43,12 +43,12 @@
 #'    X <- matrix(rnorm(n = ncol*nobs_pg, mean = 0, sd = 1), ncol=ncol)
 #'    Y <- matrix(rnorm(n = ncol*nobs_pg, mean = diff_mean, sd = 1), ncol=ncol)
 #'    mysim_data <- rbind.data.frame(X,Y)
-#'    res <- rfclust(mysim_data)
+#'    res <- clusteringRF(mysim_data)
 #'    s <- summary(res)
 #'    plot(s)
 #' }
 
-rfclust <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering", pruning = TRUE, weighting = FALSE, ncores = parallel::detectCores()-1){
+clusteringRF <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering", pruning = TRUE, weighting = FALSE, ncores = parallel::detectCores()-1){
 
   stopifnot(is.data.frame(X))
   stopifnot(distance %in% c("co-clustering", "inertia"))
@@ -67,7 +67,7 @@ rfclust <- function(X, ntrees = 500, mtry = ncol(X), distance = "co-clustering",
     tree(X, mtry, distance, pruning, weighting)
   }, cl = ncores)
 
-  class(forest) <- "rfclust"
+  class(forest) <- "clusteringRF"
   #message("We advise you do use the `summary()` on this object to agregate the result of this forest, before plotting the summary itself.")
 
   return(forest)
