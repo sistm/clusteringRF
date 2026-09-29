@@ -2,8 +2,9 @@
 #' @description Function which builds a data frame describing, for every cluster, 
 #' the associated variable intervals.
 #' @param description monothetic description of the leaves
-#' @return a data frame with 4 columns : cluster label, variable name, lower 
-#' bound of the variable range and upper bound of the variable range
+#' @return a data frame with six columns : the cluster label, the variable name, the lower 
+#' and upper bounds of the variable's range (for quantitative variables), 
+#' the categories (for qualitative variables), and the variable type
 #' @importFrom stringr str_split str_split_fixed str_trim str_remove_all str_extract_all
 #' @importFrom utils tail
 #' @export
@@ -12,21 +13,35 @@ make_path_cluster <- function(description){
   path_cluster <- data.frame(cluster = character(), 
                              variable = character(), 
                              min = numeric(), 
-                             max = numeric())
+                             max = numeric(), 
+                             categories = character(), 
+                             type = character())
   
   for (cluster in names(description)){
-    elems <- str_split(description[[cluster]], ",")[[1]] |> str_trim()
-    parsed <- str_split_fixed(elems, "=", 2)
-    vars <- str_remove_all(parsed[,1], " ")
-    exprs <- str_trim(parsed[,2])
+    conds <- str_split(description[[cluster]], " , ")[[1]] |> str_trim()
+    parts <- str_split_fixed(conds, "=", 2)
+    vars <- str_remove_all(parts[,1], " ")
+    exprs <- str_trim(parts[,2])
     for (v in unique(vars)){
       idx <- tail(which(vars == v),1)
-      limits <- as.numeric(str_extract_all(exprs[idx],"-?\\d+\\.?\\d*|-Inf|Inf")[[1]])
-      path_cluster <- rbind(path_cluster, 
-                            data.frame(cluster = cluster,
-                                       variable = v,
-                                       min = limits[1], 
-                                       max = limits[2]))
+      expr <- exprs[idx]
+      if(str_detect(expr, "^\\{")){
+        cats <- expr |> str_remove_all("[{}]") |> str_split(",") |> unlist() |> str_trim()
+        path_cluster <- rbind(path_cluster, 
+                              data.frame(cluster = cluster,
+                                         variable = v,
+                                         min = NA_real_, 
+                                         max = NA_real_, categories = I(list(cats)), 
+                                         type = "quali"))
+      }else{
+        limits <- as.numeric(str_extract_all(exprs[idx],"-?\\d+\\.?\\d*|-Inf|Inf")[[1]])
+        path_cluster <- rbind(path_cluster, 
+                              data.frame(cluster = cluster,
+                                         variable = v,
+                                         min = limits[1], 
+                                         max = limits[2], categories = I(list(NA_character_)), 
+                                         type = "quanti")) 
+      }
     }
   }
   return(path_cluster)}
@@ -38,25 +53,32 @@ make_path_cluster <- function(description){
 #' @param path_cluster a data frame produced by \code{make_path_cluster()}
 #' @return a data frame with the predicted cluster label for each observation
 #' @export
-make_prediction <- function(X, path_cluster){
-  n <- nrow(X)
-  prediction <- character(n)
+make_prediction <- function(X, path_cluster) {
+  n        <- nrow(X)
   clusters <- unique(path_cluster$cluster)
-  for (i in seq_len(n)){
-    X_i <- X[i, , drop = FALSE]
-    scores <- numeric(length(clusters))
-    names(scores) <- clusters
-    for (cluster in clusters){
-      rules <- path_cluster[path_cluster$cluster == cluster, ]
-      score <- all(sapply(rules$variable, function(v){
-        X_i[[v]] >= rules[rules$variable == v, "min"] && 
-          X_i[[v]] < rules[rules$variable == v, "max"]
-      }))
-      scores[cluster] <- score
+  nK       <- length(clusters)
+  
+  rules_list <- split(path_cluster, path_cluster$cluster)[clusters]
+  
+  membership <- matrix(TRUE, n, nK, dimnames = list(NULL, clusters))
+  
+  for (k in seq_len(nK)) {
+    rules <- rules_list[[k]]
+    for (r in seq_len(nrow(rules))) {
+      v <- rules$variable[r]
+      t <- rules$type[r]
+      if (t == "quali"){
+        membership[, k] <- membership[, k] &
+          (X[[v]] %in% rules$categories[r][[1]])
+      }else{
+        membership[, k] <- membership[, k] &
+          (X[[v]] >= rules$min[r]) & (X[[v]] < rules$max[r])
+      }
     }
-    prediction[i] <- names(which.max(scores))
   }
-  return(data.frame(prediction = prediction, stringsAsFactors = FALSE))
+  
+  pred_idx   <- max.col(membership, ties.method = "first")
+  data.frame(prediction = clusters[pred_idx], stringsAsFactors = FALSE)
 }
 
 
